@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin());
   let browser;
   let closeBrowserAfterCompletion = true;
 
-  // Connect to an existing browser if a WebSocket endpoint is provided
+  // Connect to an existing browser if a WebSocket endpoint is provided.
   if (process.env.BROWSER_WS_ENDPOINT) {
     try {
       browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
@@ -64,12 +64,11 @@ puppeteer.use(StealthPlugin());
   let easyApplyCount = 0;    // Count of Easy Apply jobs processed
   let processedIndexes = new Set();
   let scrollAttempts = 0;
-  const maxScrollAttempts = allowedMaxScrollAttempts; 
-
-  // Keep looking for job cards until we process the allowed number of Easy Apply jobs or reach max scroll attempts.
-  while (easyApplyCount < allowedEasyApplyCount && scrollAttempts < maxScrollAttempts) {
-    const jobListings = await page.$$('.job-card-container');
+  
+  // Main loop: continue until desired number of Easy Apply applications is reached.
+  while (easyApplyCount < allowedEasyApplyCount) {
     let foundNewJob = false;
+    const jobListings = await page.$$('.job-card-container');
 
     for (let i = 0; i < jobListings.length && easyApplyCount < allowedEasyApplyCount; i++) {
       if (processedIndexes.has(i)) continue; // Skip already processed job cards.
@@ -155,12 +154,61 @@ puppeteer.use(StealthPlugin());
       }
     } // end for-loop
 
-    if (easyApplyCount < allowedEasyApplyCount) {
-      if (!foundNewJob) {
-        console.log("No new Easy Apply jobs found in the current view. Scrolling down...");
+    if (easyApplyCount >= allowedEasyApplyCount) break;
+
+    // If no new Easy Apply job was found in the current iteration...
+    if (!foundNewJob) {
+      scrollAttempts++;
+      if (scrollAttempts >= allowedMaxScrollAttempts) {
+        console.log("⚠️ No new Easy Apply jobs found after maximum scroll attempts.");
+
+        // Scroll to bottom first to ensure pagination controls are visible.
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await delay(2000);
+
+        // Try to find an enabled Next page button using our helper.
+        const nextPageButton = await getXPathElement(page, "//button[contains(@aria-label, 'Next') and not(@disabled)]");
+        if (nextPageButton) {
+          console.log("➡️ Next page button found using XPath helper, clicking to navigate to the next page...");
+          await nextPageButton.click();
+          await delay(3000);
+          processedIndexes.clear(); // Reset processed job cards for the new page.
+          scrollAttempts = 0;
+          continue;
+        } else {
+          // Fallback: Attempt to construct the next page URL.
+          const currentUrl = page.url();
+          let nextPageUrl;
+          const startMatch = currentUrl.match(/start=(\d+)/);
+          if (startMatch) {
+            let startVal = parseInt(startMatch[1], 10);
+            startVal += 25; // Adjust based on jobs per page.
+            nextPageUrl = currentUrl.replace(/start=\d+/, `start=${startVal}`);
+          } else {
+            nextPageUrl = currentUrl.includes('?')
+              ? `${currentUrl}&start=25`
+              : `${currentUrl}?start=25`;
+          }
+          
+          if (nextPageUrl) {
+            console.log(`➡️ Navigating to the next page using URL: ${nextPageUrl}`);
+            await page.goto(nextPageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            processedIndexes.clear();
+            scrollAttempts = 0;
+            continue;
+          } else {
+            console.log("⚠️ Next page button not found, and unable to construct next page URL. Ending job search.");
+            break;
+          }
+        }
       } else {
-        console.log("Scrolling down for more jobs...");
+        console.log("No new Easy Apply jobs found in the current view. Scrolling down...");
+        await autoScroll(page);
+        await delay(2000);
       }
+    } else {
+      // If at least one new job was found, still scroll for more.
+      console.log("Scrolling down for more jobs...");
       await autoScroll(page);
       await delay(2000);
       scrollAttempts++;
@@ -222,6 +270,21 @@ async function waitForXPathAlternative(page, xpath, timeout = 5000) {
     await delay(pollingInterval);
   }
   throw new Error("Timeout waiting for XPath: " + xpath);
+}
+
+// getXPathElement: a helper to find the first element matching an XPath expression.
+async function getXPathElement(page, xpath) {
+  const handle = await page.evaluateHandle((xp) => {
+    return document.evaluate(
+      xp,
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null
+    ).singleNodeValue;
+  }, xpath);
+  const element = handle.asElement();
+  return element ? element : null;
 }
 
 // autoFillApplication: attempts to auto-fill application fields (e.g., clicking "Yes" for yes/no questions and selecting a resume).
