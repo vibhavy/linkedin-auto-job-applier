@@ -33,7 +33,7 @@ This project automates applying for jobs on LinkedIn using the **Easy Apply** fe
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/linkedin-auto-job-applier.git
+   git clone https://github.com/vibhavy/linkedin-auto-job-applier.git
    cd linkedin-auto-job-applier
 
 
