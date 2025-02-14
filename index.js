@@ -3,6 +3,10 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const allowedEasyApplyCount = process.env.MAX_EASY_APPLY_COUNT ?? 5;
 const allowedMaxScrollAttempts = process.env.MAX_SCROLL_ATTEMPTS ?? 10;
+const skillSet = process.env.SKILL_SET ?? 'nodejs';
+// Encode the skillSet to handle spaces and special characters
+const encodedSkillSet = encodeURIComponent(skillSet);
+
 
 puppeteer.use(StealthPlugin());
 
@@ -55,7 +59,7 @@ puppeteer.use(StealthPlugin());
   // Give some time after login to avoid bot detection.
   await delay(3000);
 
-  const jobSearchURL = "https://www.linkedin.com/jobs/search/?keywords=node%20js";
+  const jobSearchURL = `https://www.linkedin.com/jobs/search/?keywords=${encodedSkillSet}`;
   console.log("🔎 Navigating to job search page...");
   await page.goto(jobSearchURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
   console.log("🔍 Searching for jobs...");
