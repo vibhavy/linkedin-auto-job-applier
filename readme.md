@@ -48,6 +48,7 @@ This project automates applying for jobs on LinkedIn using the **Easy Apply** fe
     # LinkedIn Credentials
     LINKEDIN_EMAIL=your.email@example.com
     LINKEDIN_PASSWORD=yourLinkedInPassword
+    SKILL_SET=nodejs
 
     # Optional: Connect to an existing browser instance with remote debugging enabled.
     # Launch Chrome with: chrome --remote-debugging-port=9222
