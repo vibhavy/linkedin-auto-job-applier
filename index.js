@@ -1,4 +1,5 @@
 require('dotenv').config();
+const cron = require('node-cron');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const allowedEasyApplyCount = process.env.MAX_EASY_APPLY_COUNT ?? 5;
@@ -10,7 +11,7 @@ const encodedSkillSet = encodeURIComponent(skillSet);
 
 puppeteer.use(StealthPlugin());
 
-(async () => {
+async function applyToJobsEngine(){
   let browser;
   let closeBrowserAfterCompletion = true;
 
@@ -221,7 +222,21 @@ puppeteer.use(StealthPlugin());
 
   console.log(`🚀 Job applications completed. Total 'Easy Apply' clicks: ${applicationsCount}`);
   if (closeBrowserAfterCompletion) await browser.close();
-})();
+}
+
+// If no cron expression is provided, run the job application engine immediately
+if (!process.env.CRON_EXPRESSION || process.env.CRON_EXPRESSION.toLowerCase() == 'none') {
+  applyToJobsEngine()
+} 
+else {
+  // If a cron expression is provided, schedule the job application engine
+  console.log(`Scheduling job application engine with CRON_EXPRESSION: ${process.env.CRON_EXPRESSION}`);
+  cron.schedule(process.env.CRON_EXPRESSION, () => {
+    const now = new Date();
+    console.log(`Applying to jobs at: ${now.toLocaleString()}`);
+    applyToJobsEngine()
+  });
+}
 
 // --- Helper Functions ---
 
