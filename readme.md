@@ -61,6 +61,9 @@ This project automates applying for jobs on LinkedIn using the **Easy Apply** fe
     # Optional: Maximum number of scroll attempts to load additional job cards (default is 10)
     MAX_SCROLL_ATTEMPTS=10
 
+    # Optional: Cron expression for scheduling the job application task (default is None)
+    CRON_EXPRESSION=None
+
 ***Note::***
 
 **To use BROWSER_WS_ENDPOINT, you must launch your browser with remote debugging enabled. For example:**
