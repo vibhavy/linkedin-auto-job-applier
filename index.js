@@ -59,8 +59,10 @@ async function applyToJobsEngine(){
 
   // Give some time after login to avoid bot detection.
   await delay(3000);
+  
+  const jobFilterUrl = process.env.JOB_FILTER_URL || null;
+  const jobSearchURL = jobFilterUrl || `https://www.linkedin.com/jobs/search/?keywords=${encodedSkillSet}`;
 
-  const jobSearchURL = `https://www.linkedin.com/jobs/search/?keywords=${encodedSkillSet}`;
   console.log("🔎 Navigating to job search page...");
   await page.goto(jobSearchURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
   console.log("🔍 Searching for jobs...");
