@@ -224,14 +224,15 @@ async function applyToJobsEngine(){
   if (closeBrowserAfterCompletion) await browser.close();
 }
 
+const cronExpression = process.env.CRON_EXPRESSION || null;
 // If no cron expression is provided, run the job application engine immediately
-if (!process.env.CRON_EXPRESSION || process.env.CRON_EXPRESSION.toLowerCase() == 'none') {
+if (!cronExpression || cronExpression?.toLowerCase() == 'none') {
   applyToJobsEngine()
 } 
 else {
   // If a cron expression is provided, schedule the job application engine
-  console.log(`Scheduling job application engine with CRON_EXPRESSION: ${process.env.CRON_EXPRESSION}`);
-  cron.schedule(process.env.CRON_EXPRESSION, () => {
+  console.log(`Scheduling job application engine with CRON_EXPRESSION: ${cronExpression}`);
+  cron.schedule(cronExpression, () => {
     const now = new Date();
     console.log(`Applying to jobs at: ${now.toLocaleString()}`);
     applyToJobsEngine()
