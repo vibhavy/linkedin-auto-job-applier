@@ -50,6 +50,11 @@ This project automates applying for jobs on LinkedIn using the **Easy Apply** fe
     LINKEDIN_PASSWORD=yourLinkedInPassword
     SKILL_SET=nodejs
 
+    # Job Filter URL (Optional) - If not required comment it out by #
+    # This is the URL of the LinkedIn job search page with your desired filters applied.
+    # You can customize this URL by applying filters on LinkedIn and copying the resulting URL.
+    JOB_FILTER_URL=https://www.linkedin.com/jobs/search/?currentJobId=4120693189&f_AL=true&f_E=3%2C4&f_JT=F&f_T=9%2C39%2C25170%2C25194%2C24&geoId=101452733&keywords=Nodejs&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true&sortBy=R
+
     # Optional: Connect to an existing browser instance with remote debugging enabled.
     # Launch Chrome with: chrome --remote-debugging-port=9222
     # Then retrieve the WebSocket endpoint from http://localhost:9222/json/version
