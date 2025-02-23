@@ -60,7 +60,7 @@ async function applyToJobsEngine(){
   // Give some time after login to avoid bot detection.
   await delay(3000);
   
-  const jobFilterUrl = process.env.JOB_FILTER_URL || null;
+  const jobFilterUrl = process.env.JOB_FILTER_URL;
   const jobSearchURL = jobFilterUrl || `https://www.linkedin.com/jobs/search/?keywords=${encodedSkillSet}`;
 
   console.log("🔎 Navigating to job search page...");
